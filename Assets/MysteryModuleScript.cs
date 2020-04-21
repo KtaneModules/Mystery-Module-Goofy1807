@@ -30,7 +30,14 @@ public class MysteryModuleScript : MonoBehaviour
 
     private static readonly Dictionary<string, remainingCandidatesInfo> _infos = new Dictionary<string, remainingCandidatesInfo>();
 
-    static private string[] _ignore = { "Encryption Bingo", "Cookie Jars", "Hogwarts", "Forget The Colors", "14", "Bamboozling Time Keeper", "Brainf---", "Forget Enigma", "Forget Everything", "Forget It Not", "Forget Me Not", "Forget Me Later", "Forget Perspective", "Forget Them All", "Forget This", "Forget Us Not", "Organization", "Purgatory", "Simon Forgets", "Simon's Stages", "Souvenir", "Tallordered Keys", "The Time Keeper", "The Troll", "The Very Annoying Button", "Timing Is Everything", "Turn The Key", "Ultimate Custom Night", "Übermodule" };
+    static private string[] _ignore = {"14", "Bamboozling Time Keeper", "Brainf---", "Cookie Jars", "Divided Squares",
+                                       "Encryption Bingo", "Forget Enigma", "Forget Everything", "Forget Infinity", "Forget It Not",
+                                       "Forget Me Later", "Forget Me Not", "Forget Me Now", "Forget Perspective", "Forget Them All",
+                                       "Forget This", "Forget Us Not", "Four-Card Monte", "Hogwarts", "Organization", "Random Access Memory",
+                                       "RPS Judging", "Simon Forgets", "Simon's Stages", "Souvenir", "Tallordered Keys", "Tax Returns", "The Swan",
+                                       "The Time Keeper", "The Troll", "The Twin", "The Very Annoying Button", "Timing is Everything", "Turn The Key",
+                                       "Turn The Keys", "Übermodule", "Ultimate Custom Night" };
+
     private string[] bossModules;
     private List<string> keysName = new List<string>();
     private string[] possibleCandidatesName;
@@ -90,7 +97,7 @@ public class MysteryModuleScript : MonoBehaviour
                 Debug.LogFormat(@"[Mystery Module #{0}] 'Failswitch' was pressed - Remaining time was cut in half", moduleId);
                 if (failsolve)
                     setScreen("Why would you do that!?", 255, 0, 0);
-                TimeRemaining.FromModule(Module, Bomb.GetTime() * 0.75f);
+                TimeRemaining.FromModule(Module, Bomb.GetTime() * 0.9f);
                 return false;
             }
             FailswitchPressed = true;
@@ -107,8 +114,19 @@ public class MysteryModuleScript : MonoBehaviour
         yield return null;
 
         bossModules = BossModule.GetIgnoredModules(Module, _ignore);
-        if (bossModules == null)
-            bossModules = _ignore;
+        if (bossModules != null)
+            _ignore = bossModules;
+
+        if (Bomb.GetSolvableModuleNames().Any(n => _ignore.Contains(n)))
+        {
+            Debug.LogFormat(@"[Mystery Module #{0}] Anything that could ruin the mood found - Green button can be pressed to solve this module", moduleId);
+            nextStage = true;
+            SetLED(0, 255, 0);
+            setScreen("Free solve :D", 0, 255, 0);
+            failsolve = true;
+            StopAllCoroutines();
+            yield break;
+        }
 
         var serialNumber = Bomb.GetSerialNumber();
         if (!_infos.ContainsKey(serialNumber))
