@@ -1,2 +1,2 @@
 #[ModKit Wiki](../../wiki)
-# Elder-Password
+# Mystery Module
