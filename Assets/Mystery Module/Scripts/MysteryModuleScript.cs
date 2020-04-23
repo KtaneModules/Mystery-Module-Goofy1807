@@ -21,6 +21,8 @@ public class MysteryModuleScript : MonoBehaviour
     public KMSelectable NextModule;
     public KMSelectable Failswitch;
     public GameObject Cover;
+    public GameObject PivotRight;
+    public GameObject PivotLeft;
 
     sealed class remainingCandidatesInfo
     {
@@ -64,7 +66,7 @@ public class MysteryModuleScript : MonoBehaviour
 
             if (failsolve)
             {
-                UnlockMystery();
+                StartCoroutine(UnlockMystery());
                 return false;
             }
 
@@ -84,7 +86,7 @@ public class MysteryModuleScript : MonoBehaviour
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Failswitch.transform);
             if (FailswitchPressed)
             {
-                UnlockMystery();
+                StartCoroutine(UnlockMystery());
                 Debug.LogFormat(@"[Mystery Module #{0}] 'Failswitch' was pressed - Remaining time was cut by a quarter", moduleId);
                 if (failsolve)
                     setScreen("Why would you do that!?", 255, 0, 0);
@@ -141,13 +143,25 @@ public class MysteryModuleScript : MonoBehaviour
         else
             inf = _infos[serialNumber];
 
-        if (inf.RemainingCandidateMystifiables.Count == 0)
+        var mystifiableCandidates = inf.RemainingCandidateMystifiables.Where(m =>
+        {
+            // We need to make sure that Mystery Modules do not hide themselves in a cycle.
+            // This code relies on the fact that we haven’t chosen a mystified module yet (mystsifiedModule for us is null).
+            MysteryModuleScript scr;
+            var my = m;
+            while ((scr = my.GetComponent<MysteryModuleScript>()) != null && scr.mystifiedModule != null)
+                my = scr.mystifiedModule;
+
+            return my != Module;
+        }).ToArray();
+
+        if (mystifiableCandidates.Length == 0)
         {
             Debug.LogFormat(@"[Mystery Module #{0}] No possible candidate found to mystify - Green button can be pressed to solve this module.", moduleId);
             goto mustAutoSolve;
         }
 
-        mystifiedModule = inf.RemainingCandidateMystifiables[Random.Range(0, inf.RemainingCandidateMystifiables.Count)];
+        mystifiedModule = mystifiableCandidates[Random.Range(0, mystifiableCandidates.Length)];
         inf.RemainingCandidateMystifiables.Remove(mystifiedModule);
         inf.RemainingCandidateKeys.Remove(mystifiedModule); // A mystified module cannot be a key anymore (for this or any other Mystery Module)
 
@@ -179,7 +193,8 @@ public class MysteryModuleScript : MonoBehaviour
         var scale = new Vector3(coverBounds.size.x / maxBounds.size.x, coverBounds.size.y / maxBounds.size.y, coverBounds.size.z / maxBounds.size.z);
         Cover.transform.localScale = scale;
         Cover.transform.rotation = mystifiedModule.transform.rotation;
-        Cover.transform.parent = transform;
+        yield return null;
+        Cover.transform.parent = transform.parent;
 
         SetKey();
         StartCoroutine(checkSolves());
@@ -207,9 +222,8 @@ public class MysteryModuleScript : MonoBehaviour
         LED.color = new Color32(r, g, b, 255);
     }
 
-    private void UnlockMystery()
+    private IEnumerator UnlockMystery()
     {
-        StopAllCoroutines();
         Module.HandlePass();
         Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve == true ? "unable to find a mystifyable module. You won a free solve :D" : "successfully unlocked - Well done!");
         moduleSolved = true;
@@ -217,16 +231,30 @@ public class MysteryModuleScript : MonoBehaviour
         if (!failsolve)
         {
             setScreen("Mystified module unlocked!", 0, 255, 0);
-            mystifiedModule.transform.localScale = mystifyScale;
-            Cover.SetActive(false);
-        }
+            var newScale = new Vector3(0, 0, 0);
+            var newRotR = new Vector3(0, 0, 0);
+            var newRotL = new Vector3(0, 0, 0);
+            while (mystifiedModule.transform.localScale.x < mystifyScale.x)
+            {
+                newScale = new Vector3(newScale.x + 0.005f, newScale.y + 0.005f, newScale.z + 0.005f);
+                newRotR = new Vector3(0, 0, newRotR.z - 0.0045f);
+                newRotL = new Vector3(0, 0, newRotL.z + 0.0045f);
+                mystifiedModule.transform.localScale = newScale;
+                PivotRight.transform.Rotate(newRotR);
+                PivotLeft.transform.Rotate(newRotL);
+                yield return new WaitForSeconds(0.01f);
+            }
 
+            Destroy(Cover);
+        }
+        StopAllCoroutines();
+        yield break;
     }
 
     private void SetKey()
     {
         if (keyModules.Count() == 0)
-            UnlockMystery();
+            StartCoroutine(UnlockMystery());
         else
             setScreen(keyModules[0].ModuleDisplayName, 255, 255, 255);
     }
