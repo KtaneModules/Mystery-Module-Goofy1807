@@ -307,15 +307,18 @@ public class MysteryModuleScript : MonoBehaviour
         return b;
     }
 
+    private void TwitchHandleForcedSolve()
+    {
+        StartCoroutine(UnlockMystery());
+    }
+
 #pragma warning disable 0414
     private readonly string TwitchHelpMessage = "!{0} failswitch [press the red button] | !{0} next [press the green button]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        do
-            yield return "trycancel";
-        while (strikeActive);
+
 
         if (moduleSolved)
         {
@@ -326,6 +329,9 @@ public class MysteryModuleScript : MonoBehaviour
         if (Regex.IsMatch(command, @"^\s*(red|fail|failswitch|kill|autosolve|cheat|yes|round)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
+            do
+                yield return "trycancel";
+            while (strikeActive);
             Failswitch.OnInteract();
             yield break;
         }
@@ -333,6 +339,9 @@ public class MysteryModuleScript : MonoBehaviour
         if (Regex.IsMatch(command, @"^\s*(green|next|continue|abort|square|go|solve)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
+            do
+                yield return "trycancel";
+            while (strikeActive);
             NextModule.OnInteract();
             yield break;
         }
