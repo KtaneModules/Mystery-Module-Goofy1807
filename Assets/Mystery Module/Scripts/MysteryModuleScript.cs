@@ -40,6 +40,9 @@ public class MysteryModuleScript : MonoBehaviour
     private bool failsolve = false;
     private bool strikeActive = false;
 
+    // Indicates that the unlocking animation is still running
+    private bool animating = false;
+
     private Vector3 mystifyScale;
 
     private void Start()
@@ -224,8 +227,9 @@ public class MysteryModuleScript : MonoBehaviour
 
     private IEnumerator UnlockMystery()
     {
+        animating = true;
         Module.HandlePass();
-        Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve == true ? "unable to find a mystifyable module. You won a free solve :D" : "successfully unlocked - Well done!");
+        Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve ? "unable to find a mystifyable module. You won a free solve :D" : "successfully unlocked - Well done!");
         moduleSolved = true;
         LED.color = new Color32(0, 255, 0, 255);
         if (!failsolve)
@@ -247,8 +251,8 @@ public class MysteryModuleScript : MonoBehaviour
 
             Destroy(Cover);
         }
+        animating = false;
         StopAllCoroutines();
-        yield break;
     }
 
     private void SetKey()
