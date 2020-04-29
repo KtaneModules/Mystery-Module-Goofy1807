@@ -206,7 +206,7 @@ public class MysteryModuleScript : MonoBehaviour
         mystifiedModule.transform.localScale = new Vector3(0, 0, 0);
         yield break;
 
-    mustAutoSolve:
+        mustAutoSolve:
         nextStage = true;
         SetLED(0, 255, 0);
         setScreen("Free solve :D", 0, 255, 0);
@@ -235,20 +235,18 @@ public class MysteryModuleScript : MonoBehaviour
         if (!failsolve)
         {
             setScreen("Mystified module unlocked!", 0, 255, 0);
-            var newScale = new Vector3(0, 0, 0);
-            var newRotR = new Vector3(0, 0, 0);
-            var newRotL = new Vector3(0, 0, 0);
-            while (mystifiedModule.transform.localScale.x < mystifyScale.x)
-            {
-                newScale = new Vector3(newScale.x + 0.005f, newScale.y + 0.005f, newScale.z + 0.005f);
-                newRotR = new Vector3(0, 0, newRotR.z - 0.0045f);
-                newRotL = new Vector3(0, 0, newRotL.z + 0.0045f);
-                mystifiedModule.transform.localScale = newScale;
-                PivotRight.transform.Rotate(newRotR);
-                PivotLeft.transform.Rotate(newRotL);
-                yield return new WaitForSeconds(0.01f);
-            }
 
+            var duration = 2f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                yield return null;
+                elapsed += Time.deltaTime;
+                mystifiedModule.transform.localScale = Vector3.Lerp(new Vector3(0, 0, 0), mystifyScale, elapsed / duration);
+                PivotRight.transform.localEulerAngles = new Vector3(0, 0, -90 * elapsed / duration);
+                PivotLeft.transform.localEulerAngles = new Vector3(0, 0, 90 * elapsed / duration);
+            }
+            mystifiedModule.transform.localScale = mystifyScale;
             Destroy(Cover);
         }
         animating = false;
@@ -270,7 +268,7 @@ public class MysteryModuleScript : MonoBehaviour
         {
             if (Bomb.GetSolvedModuleIDs().Contains(keyModules[0].ModuleType))
             {
-                SetLED(red ? (byte)255 : (byte)0, red ? (byte)0 : (byte)255, 0);
+                SetLED(red ? (byte) 255 : (byte) 0, red ? (byte) 0 : (byte) 255, 0);
                 red = !red;
                 nextStage = true;
             }
