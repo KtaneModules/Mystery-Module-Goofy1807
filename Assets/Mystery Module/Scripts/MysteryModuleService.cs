@@ -13,6 +13,7 @@ public class MysteryModuleService : MonoBehaviour
 {
     private string _settingsFile;
     private MysteryModuleSettings _settings;
+    private string[] moduleTypes = new string[] { "SouvenirModule", "ubermodule" };
 
     void Start()
     {
@@ -39,6 +40,7 @@ public class MysteryModuleService : MonoBehaviour
             }
         }
 
+        _settings.Version = 2;
         Debug.LogFormat(@"[Mystery Module Service] Service is active");
         StartCoroutine(GetData());
     }
@@ -53,6 +55,11 @@ public class MysteryModuleService : MonoBehaviour
     {
         string setting;
         return _settings.RememberedCompatibilities.TryGetValue(moduleId, out setting) && (setting == "MustNotBeHidden" || setting == "MustNotBeHiddenOrKey");
+    }
+
+    public bool ShouldNotBeHidden(string moduleId)
+    {
+        return (!_settings.HideUberSouvenir) && moduleTypes.Contains(moduleId);
     }
 
     public bool MustNotBeKey(string moduleId)
