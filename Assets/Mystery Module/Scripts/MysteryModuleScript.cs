@@ -137,7 +137,7 @@ public class MysteryModuleScript : MonoBehaviour
                 if (module == null)
                     continue;
 
-                if (!mmService.MustNotBeHidden(module.ModuleType) || !mmService.ShouldNotBeHidden(module.ModuleType))
+                if (!mmService.MustNotBeHidden(module.ModuleType))
                     inf.RemainingCandidateMystifiables.Add(module);
                 if (!mmService.MustNotBeKey(module.ModuleType))
                     inf.RemainingCandidateKeys.Add(module);

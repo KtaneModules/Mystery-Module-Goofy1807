@@ -13,7 +13,7 @@ public class MysteryModuleService : MonoBehaviour
 {
     private string _settingsFile;
     private MysteryModuleSettings _settings;
-    private string[] moduleTypes = new string[] { "SouvenirModule", "ubermodule" };
+    private string[] uberSouvenirModuleTypes = new string[] { "SouvenirModule", "ubermodule" };
 
     void Start()
     {
@@ -54,12 +54,8 @@ public class MysteryModuleService : MonoBehaviour
     public bool MustNotBeHidden(string moduleId)
     {
         string setting;
-        return _settings.RememberedCompatibilities.TryGetValue(moduleId, out setting) && (setting == "MustNotBeHidden" || setting == "MustNotBeHiddenOrKey");
-    }
-
-    public bool ShouldNotBeHidden(string moduleId)
-    {
-        return (!_settings.HideUberSouvenir) && moduleTypes.Contains(moduleId);
+        return (_settings.RememberedCompatibilities.TryGetValue(moduleId, out setting) && (setting == "MustNotBeHidden" || setting == "MustNotBeHiddenOrKey"))
+            || (!_settings.HideUberSouvenir && uberSouvenirModuleTypes.Contains(moduleId));
     }
 
     public bool MustNotBeKey(string moduleId)
@@ -104,7 +100,7 @@ public class MysteryModuleService : MonoBehaviour
                 var compatibility = module["MysteryModule"] as JValue;
                 if (compatibility == null || !(compatibility.Value is string))
                     continue;
-                compatibilities[(string)id.Value] = (string)compatibility.Value;
+                compatibilities[(string) id.Value] = (string) compatibility.Value;
             }
 
             Debug.LogFormat(@"[Mystery Module Service] List successfully loaded:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, compatibilities.Select(kvp => string.Format("[Mystery Module Service] {0} => {1}", kvp.Key, kvp.Value)).ToArray()));
