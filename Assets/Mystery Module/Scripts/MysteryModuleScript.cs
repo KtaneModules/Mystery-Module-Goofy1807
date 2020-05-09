@@ -107,7 +107,7 @@ public class MysteryModuleScript : MonoBehaviour
 
     private IEnumerator Setup()
     {
-        yield return null;
+        
 
         // Find the Mystery Module Service and obtain the list of compatibilities
         var mmService = FindObjectOfType<MysteryModuleService>();
@@ -116,6 +116,8 @@ public class MysteryModuleScript : MonoBehaviour
             Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.");
             goto mustAutoSolve;
         }
+
+        yield return new WaitUntil(() => mmService.SettingsLoaded);
 
         var offendingModule = Bomb.GetSolvableModuleIDs().FirstOrDefault(n => mmService.MustAutoSolve(n));
         if (offendingModule != null)

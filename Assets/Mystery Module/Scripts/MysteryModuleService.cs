@@ -11,6 +11,8 @@ using UnityEngine.Networking;
 
 public class MysteryModuleService : MonoBehaviour
 {
+    public bool SettingsLoaded = false;
+
     private string _settingsFile;
     private MysteryModuleSettings _settings;
     private string[] uberSouvenirModuleTypes = new string[] { "SouvenirModule", "ubermodule" };
@@ -30,6 +32,7 @@ public class MysteryModuleService : MonoBehaviour
                 _settings = JsonConvert.DeserializeObject<MysteryModuleSettings>(File.ReadAllText(_settingsFile), new StringEnumConverter());
                 if (_settings == null)
                     throw new Exception("Settings could not be read. Creating new Settings...");
+                SettingsLoaded = true;
                 Debug.LogFormat(@"[Mystery Module Service] Settings successfully loaded");
             }
             catch (Exception e)
@@ -105,6 +108,7 @@ public class MysteryModuleService : MonoBehaviour
 
             Debug.LogFormat(@"[Mystery Module Service] List successfully loaded:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, compatibilities.Select(kvp => string.Format("[Mystery Module Service] {0} => {1}", kvp.Key, kvp.Value)).ToArray()));
             _settings.RememberedCompatibilities = compatibilities;
+            SettingsLoaded = true;
 
             try
             {
