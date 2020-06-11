@@ -45,7 +45,10 @@ public class MysteryModuleService : MonoBehaviour
 
         _settings.Version = 2;
         Debug.LogFormat(@"[Mystery Module Service] Service is active");
-        StartCoroutine(GetData());
+        if (_settings.AutomaticUpdate)
+            StartCoroutine(GetData());
+        else
+            Debug.LogFormat(@"[Mystery Module Service] Automatic Update is disabled!");
     }
 
     public bool MustAutoSolve(string moduleId)

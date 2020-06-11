@@ -113,7 +113,7 @@ public class MysteryModuleScript : MonoBehaviour
         var mmService = FindObjectOfType<MysteryModuleService>();
         if (mmService == null)
         {
-            Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.");
+            Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.", moduleId);
             goto mustAutoSolve;
         }
 
