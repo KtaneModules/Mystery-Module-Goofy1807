@@ -14,8 +14,12 @@ MonoBehaviour:
   id: mysterymodule
   title: Mystery Module
   author: Goofy
-  description: "Mystery Module is a module which covers another module with a screen.\r\nThis
-    mystified module cannot be solved nor seen until the screen is removed.\n"
+  description: "[b]This is a re-upload of Goofy\u2019s original module with bugfixes
+    and improvements. Please [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2069225943]UNSUBSCRIBE
+    from the old version[/url].[/b]\n\nMystery Module is a module which covers another
+    module with a screen.\r\nThis mystified module cannot be solved nor seen until
+    the screen is removed.\n\n[url=https://ktane.timwi.de/HTML/Mystery%20Module.html]Manual
+    HTML[/url]\n[url=https://ktane.timwi.de/PDF/Mystery%20Module.pdf]Manual PDF[/url]"
   version: 2.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: d6ecd4dbcfab64943915dee0cc718b39, type: 3}
