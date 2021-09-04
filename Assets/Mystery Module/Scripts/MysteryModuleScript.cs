@@ -40,7 +40,7 @@ public class MysteryModuleScript : MonoBehaviour
     private bool failsolve = false;
     private bool strikeActive = false;
 
-    // Indicates that the unlocking animation is still running
+    // Indicates that the unlocking animation is still running — used by Souvenir
     private bool animating = false;
 
     private Vector3 mystifyScale;
@@ -48,6 +48,7 @@ public class MysteryModuleScript : MonoBehaviour
     private void Start()
     {
         moduleId = moduleIdCounter++;
+        Debug.LogFormat(@"[Mystery Module #{0}] Version: 2.0", moduleId);
 
         NextModule.OnInteract += delegate
         {
