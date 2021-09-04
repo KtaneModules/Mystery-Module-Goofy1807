@@ -40,6 +40,9 @@ public class MysteryModuleScript : MonoBehaviour
     private bool failsolve = false;
     private bool strikeActive = false;
 
+    // Indicates that the unlocking animation is still running
+    private bool animating = false;
+
     private Vector3 mystifyScale;
 
     private void Start()
@@ -224,6 +227,7 @@ public class MysteryModuleScript : MonoBehaviour
 
     private IEnumerator UnlockMystery()
     {
+        animating = true;
         Module.HandlePass();
         Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve ? "unable to find a mystifyable module. You won a free solve :D" : "successfully unlocked - Well done!");
         moduleSolved = true;
@@ -245,6 +249,7 @@ public class MysteryModuleScript : MonoBehaviour
             mystifiedModule.transform.localScale = mystifyScale;
             Destroy(Cover);
         }
+        animating = false;
         StopAllCoroutines();
     }
 
