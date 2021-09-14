@@ -1,9 +1,10 @@
-﻿using KModkit;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using KModkit;
 using UnityEngine;
+
 using Random = UnityEngine.Random;
 
 public class MysteryModuleScript : MonoBehaviour
@@ -13,10 +14,6 @@ public class MysteryModuleScript : MonoBehaviour
     public KMBombModule Module;
     public TextMesh Screen;
     public Light LED;
-
-    static int moduleIdCounter = 1;
-    int moduleId;
-    private bool moduleSolved;
 
     public KMSelectable NextModule;
     public KMSelectable Failswitch;
@@ -35,6 +32,10 @@ public class MysteryModuleScript : MonoBehaviour
     private List<KMBombModule> keyModules;
     private KMBombModule mystifiedModule;
 
+    private static int moduleIdCounter = 1;
+    private int moduleId;
+    private bool moduleSolved;
+
     private bool FailswitchPressed = false;
     private bool nextStage = false;
     private bool failsolve = false;
@@ -49,6 +50,7 @@ public class MysteryModuleScript : MonoBehaviour
     {
         moduleId = moduleIdCounter++;
         Debug.LogFormat(@"[Mystery Module #{0}] Version: 2.0", moduleId);
+        LED.range *= transform.lossyScale.x;
 
         NextModule.OnInteract += delegate
         {
