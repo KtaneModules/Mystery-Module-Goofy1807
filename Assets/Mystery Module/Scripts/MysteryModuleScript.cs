@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using KModkit;
 using UnityEngine;
@@ -129,6 +131,7 @@ public class MysteryModuleScript : MonoBehaviour
 
         var serialNumber = Bomb.GetSerialNumber();
         remainingCandidatesInfo inf;
+        List<object> organizationModules = new List<object>();
         if (!_infos.ContainsKey(serialNumber))
         {
             inf = new remainingCandidatesInfo();
@@ -144,6 +147,10 @@ public class MysteryModuleScript : MonoBehaviour
                     inf.RemainingCandidateMystifiables.Add(module);
                 if (!mmService.MustNotBeKey(module.ModuleType))
                     inf.RemainingCandidateKeys.Add(module);
+
+                object orgMod;
+                if (module.ModuleType == "organizationModule" && (orgMod = module.GetComponent("OrganizationScript")) != null)
+                    organizationModules.Add(orgMod);
             }
         }
         else
@@ -207,6 +214,17 @@ public class MysteryModuleScript : MonoBehaviour
 
         mystifyScale = mystifiedModule.transform.localScale;
         mystifiedModule.transform.localScale = new Vector3(0, 0, 0);
+
+        foreach (var org in organizationModules)
+        {
+            var mth = org.GetType().GetMethod("MysteryModuleNotification", BindingFlags.Public | BindingFlags.Instance);
+            Debug.LogFormat(@"<Mystery Module #{0}> Notifying Organization: {1}", moduleId, mth != null);
+            if (mth != null && mth.GetParameters().Select(p => p.ParameterType).SequenceEqual(new[] { typeof(List<string>), typeof(string) }))
+            {
+                Debug.LogFormat(@"[Mystery Module #{0}] Notifying Organization", moduleId);
+                mth.Invoke(org, new object[] { keyModules.Select(k => k.ModuleDisplayName).ToList(), mystifiedModule.ModuleDisplayName });
+            }
+        }
         yield break;
 
         mustAutoSolve:
