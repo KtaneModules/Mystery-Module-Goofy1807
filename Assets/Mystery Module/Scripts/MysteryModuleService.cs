@@ -11,8 +11,11 @@ using UnityEngine.Networking;
 
 public class MysteryModuleService : MonoBehaviour
 {
+    public bool SettingsLoaded = false;
+
     private string _settingsFile;
     private MysteryModuleSettings _settings;
+    private string[] uberSouvenirModuleTypes = new string[] { "SouvenirModule", "ubermodule" };
 
     void Start()
     {
@@ -29,6 +32,7 @@ public class MysteryModuleService : MonoBehaviour
                 _settings = JsonConvert.DeserializeObject<MysteryModuleSettings>(File.ReadAllText(_settingsFile), new StringEnumConverter());
                 if (_settings == null)
                     throw new Exception("Settings could not be read. Creating new Settings...");
+                SettingsLoaded = true;
                 Debug.LogFormat(@"[Mystery Module Service] Settings successfully loaded");
             }
             catch (Exception e)
@@ -39,8 +43,12 @@ public class MysteryModuleService : MonoBehaviour
             }
         }
 
+        _settings.Version = 2;
         Debug.LogFormat(@"[Mystery Module Service] Service is active");
-        StartCoroutine(GetData());
+        if (_settings.AutomaticUpdate)
+            StartCoroutine(GetData());
+        else
+            Debug.LogFormat(@"[Mystery Module Service] Automatic Update is disabled!");
     }
 
     public bool MustAutoSolve(string moduleId)
@@ -52,7 +60,8 @@ public class MysteryModuleService : MonoBehaviour
     public bool MustNotBeHidden(string moduleId)
     {
         string setting;
-        return _settings.RememberedCompatibilities.TryGetValue(moduleId, out setting) && (setting == "MustNotBeHidden" || setting == "MustNotBeHiddenOrKey");
+        return (_settings.RememberedCompatibilities.TryGetValue(moduleId, out setting) && (setting == "MustNotBeHidden" || setting == "MustNotBeHiddenOrKey"))
+            || (!_settings.HideUberSouvenir && uberSouvenirModuleTypes.Contains(moduleId));
     }
 
     public bool MustNotBeKey(string moduleId)
@@ -97,11 +106,12 @@ public class MysteryModuleService : MonoBehaviour
                 var compatibility = module["MysteryModule"] as JValue;
                 if (compatibility == null || !(compatibility.Value is string))
                     continue;
-                compatibilities[(string)id.Value] = (string)compatibility.Value;
+                compatibilities[(string) id.Value] = (string) compatibility.Value;
             }
 
             Debug.LogFormat(@"[Mystery Module Service] List successfully loaded:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, compatibilities.Select(kvp => string.Format("[Mystery Module Service] {0} => {1}", kvp.Key, kvp.Value)).ToArray()));
             _settings.RememberedCompatibilities = compatibilities;
+            SettingsLoaded = true;
 
             try
             {

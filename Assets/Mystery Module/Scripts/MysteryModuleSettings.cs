@@ -6,5 +6,9 @@ public sealed class MysteryModuleSettings
 
     public Dictionary<string, string> RememberedCompatibilities = new Dictionary<string, string>();
 
-    public int Version = 1;
+    public bool HideUberSouvenir = false;
+
+    public bool AutomaticUpdate = true;
+
+    public int Version = 3;
 }

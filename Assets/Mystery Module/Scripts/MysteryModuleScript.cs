@@ -112,7 +112,7 @@ public class MysteryModuleScript : MonoBehaviour
 
     private IEnumerator Setup()
     {
-        yield return null;
+        
 
         // Find the Mystery Module Service and obtain the list of compatibilities
         var mmService = FindObjectOfType<MysteryModuleService>();
@@ -121,6 +121,8 @@ public class MysteryModuleScript : MonoBehaviour
             Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.", moduleId);
             goto mustAutoSolve;
         }
+
+        yield return new WaitUntil(() => mmService.SettingsLoaded);
 
         var offendingModule = Bomb.GetSolvableModuleIDs().FirstOrDefault(n => mmService.MustAutoSolve(n));
         if (offendingModule != null)
@@ -228,7 +230,7 @@ public class MysteryModuleScript : MonoBehaviour
         }
         yield break;
 
-        mustAutoSolve:
+    mustAutoSolve:
         nextStage = true;
         SetLED(0, 255, 0);
         setScreen("Free solve :D", 0, 255, 0);
@@ -251,7 +253,7 @@ public class MysteryModuleScript : MonoBehaviour
     {
         animating = true;
         Module.HandlePass();
-        Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve ? "unable to find a mystifyable module. You won a free solve :D" : "successfully unlocked - Well done!");
+        Debug.LogFormat(@"[Mystery Module #{0}] The mystery module was {1}", moduleId, failsolve ? "unable to find a mystifiable or key module. You won a free solve :D" : "successfully unlocked - Well done!");
         moduleSolved = true;
         LED.color = new Color32(0, 255, 0, 255);
         if (!failsolve)
@@ -290,7 +292,7 @@ public class MysteryModuleScript : MonoBehaviour
         {
             if (Bomb.GetSolvedModuleIDs().Contains(keyModules[0].ModuleType))
             {
-                SetLED(red ? (byte) 255 : (byte) 0, red ? (byte) 0 : (byte) 255, 0);
+                SetLED(red ? (byte)255 : (byte)0, red ? (byte)0 : (byte)255, 0);
                 red = !red;
                 nextStage = true;
             }
@@ -319,10 +321,22 @@ public class MysteryModuleScript : MonoBehaviour
 
     private IEnumerator TwitchHandleForcedSolve()
     {
-        yield return null;
-        StartCoroutine(UnlockMystery());
-        while (!moduleSolved)
-            yield return true;
+        if (failsolve)
+        {
+            NextModule.OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+        else
+        {
+            while (keyModules.Count > 0)
+            {
+                while (!Bomb.GetSolvedModuleIDs().Contains(keyModules[0].ModuleType))
+                    yield return true;
+
+                NextModule.OnInteract();
+                yield return new WaitForSeconds(.1f);
+            }
+        }
     }
 
 #pragma warning disable 0414
@@ -337,7 +351,7 @@ public class MysteryModuleScript : MonoBehaviour
             yield break;
         }
 
-        if (Regex.IsMatch(command, @"^\s*(red|fail|failswitch|kill|autosolve|cheat|yes|round)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        else if (Regex.IsMatch(command, @"^\s*(red|fail|failswitch|kill|autosolve|cheat|yes|round)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
             do
@@ -347,7 +361,7 @@ public class MysteryModuleScript : MonoBehaviour
             yield break;
         }
 
-        if (Regex.IsMatch(command, @"^\s*(green|next|continue|abort|square|go|solve)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        else if (Regex.IsMatch(command, @"^\s*(green|next|continue|abort|square|go|solve)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
             do
@@ -356,7 +370,10 @@ public class MysteryModuleScript : MonoBehaviour
             NextModule.OnInteract();
             yield break;
         }
-
-        yield return null;
+        else
+        {
+            yield return "sendtochaterror Invalid Command";
+            yield break;
+        }
     }
 }
