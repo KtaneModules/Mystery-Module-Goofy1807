@@ -118,7 +118,7 @@ public class MysteryModuleScript : MonoBehaviour
         var mmService = FindObjectOfType<MysteryModuleService>();
         if (mmService == null)
         {
-            Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.");
+            Debug.LogFormat(@"[Mystery Module #{0}] Catastrophic problem: Mystery Module Service is not present.", moduleId);
             goto mustAutoSolve;
         }
 
@@ -195,17 +195,18 @@ public class MysteryModuleScript : MonoBehaviour
 
         Debug.LogFormat(@"[Mystery Module #{0}] Keys are: {1}, mystified module is: {2}", moduleId, keyModules.Select(km => km.ModuleDisplayName).Join(", "), mystifiedModule.ModuleDisplayName);
 
-        var maxBounds = GetMaxBounds(mystifiedModule.gameObject);
-        var coverBounds = GetMaxBounds(Cover);
-
         Cover.SetActive(true);
+        var mysPos = mystifiedModule.transform.localPosition;
+        Cover.transform.parent = mystifiedModule.transform.parent;
 
-        Cover.transform.position = maxBounds.center;
-        Cover.transform.parent = mystifiedModule.gameObject.transform;
-
-        var scale = new Vector3(coverBounds.size.x / maxBounds.size.x, coverBounds.size.y / maxBounds.size.y, coverBounds.size.z / maxBounds.size.z);
+        var scale = new Vector3(.95f, .95f, .95f);
         Cover.transform.localScale = scale;
         Cover.transform.rotation = mystifiedModule.transform.rotation;
+        if (Cover.transform.rotation == new Quaternion(0f, 0f, 1f, 0f))
+            Cover.transform.localPosition = new Vector3(mysPos.x, mysPos.y - 0.02f, mysPos.z);
+        else
+            Cover.transform.localPosition = new Vector3(mysPos.x, mysPos.y + 0.02f, mysPos.z);
+        Debug.LogFormat(@"[Mystery Module #{0}] Rotation: {1}", moduleId, Cover.transform.rotation);
         yield return null;
         Cover.transform.parent = transform.parent;
 
@@ -314,20 +315,6 @@ public class MysteryModuleScript : MonoBehaviour
         setScreen("Failswitch aborted!", 0, 255, 0);
         yield return new WaitForSeconds(2f);
         SetKey();
-    }
-
-    Bounds GetMaxBounds(GameObject g)
-    {
-        var b = new Bounds(g.transform.position, Vector3.zero);
-        foreach (Renderer r in g.GetComponentsInChildren<Renderer>())
-        {
-            b.Encapsulate(r.bounds);
-        }
-        foreach (Collider r in g.GetComponentsInChildren<Collider>())
-        {
-            b.Encapsulate(r.bounds);
-        }
-        return b;
     }
 
     private IEnumerator TwitchHandleForcedSolve()
