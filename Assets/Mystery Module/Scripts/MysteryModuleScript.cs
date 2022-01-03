@@ -51,7 +51,7 @@ public class MysteryModuleScript : MonoBehaviour
     private void Start()
     {
         moduleId = moduleIdCounter++;
-        Debug.LogFormat(@"[Mystery Module #{0}] Version: 2.0", moduleId);
+        Debug.LogFormat(@"[Mystery Module #{0}] Version: 4.0", moduleId);
         LED.range *= transform.lossyScale.x;
 
         NextModule.OnInteract += delegate

@@ -43,9 +43,8 @@ public class MysteryModuleService : MonoBehaviour
             }
         }
 
-        _settings.Version = 2;
         Debug.LogFormat(@"[Mystery Module Service] Service is active");
-        if (_settings.AutomaticUpdate)
+        if (_settings.AutomaticUpdate || _settings.Version != 4)
             StartCoroutine(GetData());
         else
             Debug.LogFormat(@"[Mystery Module Service] Automatic Update is disabled!");
@@ -111,6 +110,7 @@ public class MysteryModuleService : MonoBehaviour
 
             Debug.LogFormat(@"[Mystery Module Service] List successfully loaded:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, compatibilities.Select(kvp => string.Format("[Mystery Module Service] {0} => {1}", kvp.Key, kvp.Value)).ToArray()));
             _settings.RememberedCompatibilities = compatibilities;
+            _settings.Version = 4;
             SettingsLoaded = true;
 
             try

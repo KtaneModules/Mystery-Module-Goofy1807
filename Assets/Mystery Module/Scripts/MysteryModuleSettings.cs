@@ -10,5 +10,5 @@ public sealed class MysteryModuleSettings
 
     public bool AutomaticUpdate = true;
 
-    public int Version = 3;
+    public int Version = 4;
 }
