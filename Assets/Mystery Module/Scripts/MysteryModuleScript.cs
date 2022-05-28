@@ -51,7 +51,7 @@ public class MysteryModuleScript : MonoBehaviour
     private void Start()
     {
         moduleId = moduleIdCounter++;
-        Debug.LogFormat(@"[Mystery Module #{0}] Version: 4.0", moduleId);
+        Debug.LogFormat(@"[Mystery Module #{0}] Version: 4.1", moduleId);
         LED.range *= transform.lossyScale.x;
 
         NextModule.OnInteract += delegate
@@ -215,12 +215,22 @@ public class MysteryModuleScript : MonoBehaviour
         SetKey();
         StartCoroutine(checkSolves());
 
+        MethodInfo mth;
+        foreach (var component in mystifiedModule.gameObject.GetComponents<MonoBehaviour>())
+            if ((mth = component.GetType().GetMethod("MysteryModuleHiding", BindingFlags.Public | BindingFlags.Instance)) != null)
+            {
+                if (mth.GetParameters().Select(p => p.ParameterType).SequenceEqual(new[] { typeof(KMBombModule[]) }))
+                    mth.Invoke(component, new object[] { keyModules.ToArray() });
+                else if (mth.GetParameters().Length == 0)
+                    mth.Invoke(component, null);
+            }
+
         mystifyScale = mystifiedModule.transform.localScale;
         mystifiedModule.transform.localScale = new Vector3(0, 0, 0);
 
         foreach (var org in organizationModules)
         {
-            var mth = org.GetType().GetMethod("MysteryModuleNotification", BindingFlags.Public | BindingFlags.Instance);
+            mth = org.GetType().GetMethod("MysteryModuleNotification", BindingFlags.Public | BindingFlags.Instance);
             Debug.LogFormat(@"<Mystery Module #{0}> Notifying Organization: {1}", moduleId, mth != null);
             if (mth != null && mth.GetParameters().Select(p => p.ParameterType).SequenceEqual(new[] { typeof(List<string>), typeof(string) }))
             {
@@ -259,6 +269,10 @@ public class MysteryModuleScript : MonoBehaviour
         if (!failsolve)
         {
             setScreen("Mystified module unlocked!", 0, 255, 0);
+            MethodInfo mth;
+            foreach (var component in mystifiedModule.gameObject.GetComponents<MonoBehaviour>())
+                if ((mth = component.GetType().GetMethod("MysteryModuleRevealing", BindingFlags.Public | BindingFlags.Instance)) != null && mth.GetParameters().Length == 0)
+                    mth.Invoke(component, null);
 
             var duration = 2f;
             var elapsed = 0f;
